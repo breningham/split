@@ -6,5 +6,18 @@
 */
 {
   "files": [],
-  "references": []
+  "references": [
+    {
+      "path": "./packages/split/tsconfig.lib.json"
+    },
+    {
+      "path": "./packages/split/tsconfig.spec.json"
+    },
+    {
+      "path": "./packages/demo/tsconfig.app.json"
+    },
+    {
+      "path": "./packages/demo/tsconfig.spec.json"
+    }
+]
 }

@@ -1,6 +1,7 @@
 import {
   ActivatedRouteSnapshot,
   CanActivate,
+  Data,
   Router,
   RouterStateSnapshot,
   UrlTree,
@@ -11,20 +12,17 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-export interface CanNavigateData {
+export interface AllFlagsOffData extends Data {
   /**
    * What flags to use
-   * @default undefined // Will Throw an Error if not provided.
    */
   flags: string[];
   /**
    * What URL to use if Flags are Off/Falsy
-   * @default ['/'] // Redirect to Root of Application.
    */
   redirectTo?: string[];
   /**
    * What Value to emulate when 'control' is received.
-   * @default false // Assume that control is false.
    */
   controlValue?: boolean;
 }
@@ -39,7 +37,7 @@ export class AllFlagsOffGuard implements CanActivate {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot): Observable<boolean | UrlTree> {
-    const routeData = route.data as CanNavigateData;
+    const routeData = route.data as AllFlagsOffData;
 
     if (routeData.flags === undefined) {
       throw new Error('Flags are not set correctly');

@@ -1,6 +1,7 @@
 import {
   ActivatedRouteSnapshot,
   CanActivate,
+  Data,
   Router,
   RouterStateSnapshot,
   UrlTree,
@@ -11,10 +12,9 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-export interface CanNavigateData {
+export interface TreatmentMatchesData extends Data {
   /**
    * What split to use
-   * @default undefined // Will Throw an Error if not provided.
    */
   flag: string;
   /***
@@ -23,12 +23,10 @@ export interface CanNavigateData {
   expectedTreatment: string;
   /**
    * What URL to use if Flags are Off/Falsy
-   * @default ['/'] // Redirect to Root of Application.
    */
   redirectTo?: string[];
   /**
    * What Value to emulate when 'control' is received.
-   * @default undefined // Assume that control is not set on purpose.
    */
   controlValue?: string;
 }
@@ -43,7 +41,7 @@ export class TreatmentMatchesGuard implements CanActivate {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot): Observable<boolean | UrlTree> {
-    const routeData = route.data as CanNavigateData;
+    const routeData = route.data as TreatmentMatchesData;
 
     if (routeData.flag === undefined) {
       throw new Error('Flags are not set correctly');

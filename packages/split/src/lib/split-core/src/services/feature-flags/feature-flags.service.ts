@@ -1,21 +1,18 @@
 import { Inject, Injectable, OnDestroy } from '@angular/core';
 import {
+  AsyncTreatmentsWithConfig,
   Attributes,
-  IBrowserSettings,
   IClient,
-  ISDK,
+  Treatments,
+  TreatmentsWithConfig,
+  TreatmentWithConfig,
 } from '@splitsoftware/splitio/types/splitio';
 import { throwIfFalseWithMessage } from '../../utils/throw-if-false-with-message';
-import { SplitClient, SplitConfiguration, SplitSDK } from '../../providers';
-import {
-  BehaviorSubject,
-  Observable,
-  Subject,
-} from 'rxjs';
+import { SplitClient } from '../../providers';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { mapTreatmentToBoolean } from '../../utils/mapToBoolean';
 import { BooleanSplits } from '../../models/BooleanSplit';
-import { SplitFactory } from '@splitsoftware/splitio';
 
 @Injectable({
   providedIn: 'root',
@@ -25,9 +22,9 @@ export class FeatureFlagsService implements OnDestroy {
   public sdkReady$ = this.sdkReady.asObservable();
 
   private sdkUpdate = new Subject();
-  public sdkUpdate$ = this.sdkUpdate.asObservable().pipe();
+  public sdkUpdate$ = this.sdkUpdate.asObservable();
 
-  constructor(@Inject(SplitClient) private client: IClient, @Inject(SplitConfiguration) private configuration: IBrowserSettings) {
+  constructor(@Inject(SplitClient) private client: IClient) {
     this.client.on(this.client.Event.SDK_READY, () => {
       this.sdkReady.next(true);
       this.sdkUpdate.next();
@@ -35,12 +32,7 @@ export class FeatureFlagsService implements OnDestroy {
     this.client.on(this.client.Event.SDK_UPDATE, () => this.sdkUpdate.next());
   }
 
-  initialiseNewClient( configuration: Partial<IBrowserSettings> ) {
-    const newSDKConfig = Object.assign({}, this.configuration, configuration);
-    return SplitFactory(newSDKConfig);
-  }
-
-  getTreatment(splitName: string, controlValue?: string) {
+  getTreatment(splitName: string, controlValue?: string): Observable<string> {
     return this.sdkReady$.pipe(
       throwIfFalseWithMessage('Split client not ready'),
       map(() => this.client.getTreatment(splitName)),
@@ -50,14 +42,20 @@ export class FeatureFlagsService implements OnDestroy {
     );
   }
 
-  getTreatmentWithConfig(splitName: string, configuration: Attributes) {
+  getTreatmentWithConfig(
+    splitName: string,
+    configuration: Attributes
+  ): Observable<TreatmentWithConfig> {
     return this.sdkReady$.pipe(
       throwIfFalseWithMessage('Split client not ready'),
       map(() => this.client.getTreatmentWithConfig(splitName, configuration))
     );
   }
 
-  getTreatmentAsBoolean(splitName: string, controlValue: boolean = true) {
+  getTreatmentAsBoolean(
+    splitName: string,
+    controlValue: boolean = true
+  ): Observable<boolean> {
     return this.getTreatment(splitName).pipe(
       map(mapTreatmentToBoolean(controlValue))
     );
@@ -66,7 +64,7 @@ export class FeatureFlagsService implements OnDestroy {
   getMultipleBooleanTreatments(
     splitNames: string[],
     controlValue: boolean = true
-  ) {
+  ): Observable<BooleanSplits> {
     return this.sdkReady$.pipe(
       throwIfFalseWithMessage('Split client not ready'),
       map(() => this.client.getTreatments(splitNames)),
@@ -83,7 +81,7 @@ export class FeatureFlagsService implements OnDestroy {
     );
   }
 
-  getMultipleTreatments(splitNames: string[]) {
+  getMultipleTreatments(splitNames: string[]): Observable<Treatments> {
     return this.sdkReady$.pipe(
       throwIfFalseWithMessage('Split client not ready'),
       map(() => this.client.getTreatments(splitNames))
@@ -93,7 +91,7 @@ export class FeatureFlagsService implements OnDestroy {
   getMultipleTreatmentsWithConfig(
     splitNames: string[],
     configuration: Attributes
-  ) {
+  ): Observable<TreatmentsWithConfig> {
     return this.sdkReady$.pipe(
       throwIfFalseWithMessage('Split client not ready'),
       map(() => this.client.getTreatmentsWithConfig(splitNames, configuration))
@@ -102,11 +100,11 @@ export class FeatureFlagsService implements OnDestroy {
 
   createTreatmentUpdateListener(
     treatment: Observable<string | boolean | SplitIO.Treatments>
-  ) {
+  ): Observable<string | boolean | SplitIO.Treatments> {
     return this.sdkUpdate$.pipe(switchMap(() => treatment));
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.client.destroy();
   }
 }

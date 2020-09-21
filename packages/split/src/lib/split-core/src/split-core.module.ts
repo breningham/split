@@ -1,7 +1,13 @@
-import { IBrowserSettings } from '@splitsoftware/splitio/types/splitio';
-import { NgModule, ModuleWithProviders } from '@angular/core';
+import { ModuleWithProviders, NgModule } from '@angular/core';
+import {
+  SplitClient,
+  SplitConfiguration,
+  SplitSDK,
+  splitClientFactory,
+  splitSDKFactory,
+} from './providers';
 
-import { splitSDKFactory, SplitConfiguration, SplitSDK } from './providers';
+import { IBrowserSettings } from '@splitsoftware/splitio/types/splitio';
 
 @NgModule({})
 export class SplitCoreModule {
@@ -16,6 +22,11 @@ export class SplitCoreModule {
           provide: SplitSDK,
           useFactory: splitSDKFactory,
           deps: [SplitConfiguration],
+        },
+        {
+          provide: SplitClient,
+          useFactory: splitClientFactory,
+          deps: [SplitSDK],
         },
       ],
     };

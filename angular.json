@@ -163,6 +163,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "split"
+    }
+  },
+  "defaultProject": "split",
+  "cli": {
+    "analytics": "e310c103-c20d-456a-a7d4-05f1c43cb005"
+  }
 }

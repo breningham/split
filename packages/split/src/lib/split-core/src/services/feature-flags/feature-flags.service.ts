@@ -1,44 +1,34 @@
 import { Inject, Injectable, OnDestroy } from '@angular/core';
 import {
-  AsyncTreatmentsWithConfig,
   Attributes,
   IClient,
   Treatments,
   TreatmentsWithConfig,
   TreatmentWithConfig,
 } from '@splitsoftware/splitio/types/splitio';
-import { throwIfFalseWithMessage } from '../../utils/throw-if-false-with-message';
+import { throwIfSDKNotReady } from '../../utils/throwIfSDKNotReady';
 import { SplitClient } from '../../providers';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
-import { mapTreatmentToBoolean } from '../../utils/mapToBoolean';
+import { Observable } from 'rxjs';
+import { delay, map, retry, retryWhen, switchMap, take } from 'rxjs/operators';
+import { mapTreatmentToBoolean } from '../../utils/mapTreatmentToBoolean';
 import { BooleanSplits } from '../../models/BooleanSplit';
+import { BaseSplitService } from '../base.service';
+import { mapControlToValue } from '../../utils/mapControlToValue';
 
 @Injectable({
   providedIn: 'root',
 })
-export class FeatureFlagsService implements OnDestroy {
-  private sdkReady = new BehaviorSubject(false);
-  public sdkReady$ = this.sdkReady.asObservable();
-
-  private sdkUpdate = new Subject();
-  public sdkUpdate$ = this.sdkUpdate.asObservable();
-
-  constructor(@Inject(SplitClient) private client: IClient) {
-    this.client.on(this.client.Event.SDK_READY, () => {
-      this.sdkReady.next(true);
-      this.sdkUpdate.next();
-    });
-    this.client.on(this.client.Event.SDK_UPDATE, () => this.sdkUpdate.next());
+export class FeatureFlagsService extends BaseSplitService implements OnDestroy {
+  constructor(@Inject(SplitClient) client: IClient) {
+    super(client);
   }
 
   getTreatment(splitName: string, controlValue?: string): Observable<string> {
     return this.sdkReady$.pipe(
-      throwIfFalseWithMessage('Split client not ready'),
+      throwIfSDKNotReady,
       map(() => this.client.getTreatment(splitName)),
-      map((treatment: string) =>
-        treatment === 'control' ? controlValue : treatment
-      )
+      map(mapControlToValue(controlValue)),
+      retryWhen((errors) => errors.pipe(delay(100), take(3)))
     );
   }
 
@@ -47,8 +37,9 @@ export class FeatureFlagsService implements OnDestroy {
     configuration: Attributes
   ): Observable<TreatmentWithConfig> {
     return this.sdkReady$.pipe(
-      throwIfFalseWithMessage('Split client not ready'),
-      map(() => this.client.getTreatmentWithConfig(splitName, configuration))
+      throwIfSDKNotReady,
+      map(() => this.client.getTreatmentWithConfig(splitName, configuration)),
+      retryWhen((errors) => errors.pipe(delay(100), take(3)))
     );
   }
 
@@ -66,7 +57,7 @@ export class FeatureFlagsService implements OnDestroy {
     controlValue: boolean = true
   ): Observable<BooleanSplits> {
     return this.sdkReady$.pipe(
-      throwIfFalseWithMessage('Split client not ready'),
+      throwIfSDKNotReady,
       map(() => this.client.getTreatments(splitNames)),
       map((treatments) => Object.entries(treatments)),
       map((treatments) =>
@@ -77,14 +68,16 @@ export class FeatureFlagsService implements OnDestroy {
             })
           )
           .reduce<BooleanSplits>((a, t) => ({ ...a, ...t }), {})
-      )
+      ),
+      retryWhen((errors) => errors.pipe(delay(100), take(3)))
     );
   }
 
   getMultipleTreatments(splitNames: string[]): Observable<Treatments> {
     return this.sdkReady$.pipe(
-      throwIfFalseWithMessage('Split client not ready'),
-      map(() => this.client.getTreatments(splitNames))
+      throwIfSDKNotReady,
+      map(() => this.client.getTreatments(splitNames)),
+      retryWhen((errors) => errors.pipe(delay(100), take(3)))
     );
   }
 
@@ -93,8 +86,9 @@ export class FeatureFlagsService implements OnDestroy {
     configuration: Attributes
   ): Observable<TreatmentsWithConfig> {
     return this.sdkReady$.pipe(
-      throwIfFalseWithMessage('Split client not ready'),
-      map(() => this.client.getTreatmentsWithConfig(splitNames, configuration))
+      throwIfSDKNotReady,
+      map(() => this.client.getTreatmentsWithConfig(splitNames, configuration)),
+      retryWhen((errors) => errors.pipe(delay(100), take(3)))
     );
   }
 

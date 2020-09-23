@@ -2,7 +2,10 @@
   "ngPackage": {
     "lib": {
       "entryFile": "public-api.ts",
-      "cssUrl": "inline"
+      "cssUrl": "inline",
+      "umdModuleIds": {
+        "@splitsoftware/splitio": "splitio"
+      }
     }
   }
 }

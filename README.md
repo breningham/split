@@ -1,27 +1,44 @@
 # Split
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.0.4.
+# Disclaimer: this is not official SplitSoftware software, this is a third party Intergration Library
 
-## Development server
+An Angular Library for working with [SplitIO](https://split.io) Javascript SDK.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+You can see it in action here: [Demo](https://breningham.github.io/split/).
 
-## Code scaffolding
+## Installation
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+You will need a SplitIO Account (get one here: [SplitIO](https://split.io) )
 
-## Build
+and you will want to install the splitSDK via npm/yarn
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+- via npm `npm install @splitsoftware/splitio`
+- via yarn `yarn add @splitsoftware/splitio`
 
-## Running unit tests
+and then install this package:
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+- via npm: `npm install @inghamdev/split`
+- via yarn `yarn add @inghamdev/split`
 
-## Running end-to-end tests
+## Usage
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+import the `SpliteCoreModule` into your AppModule and import it using the `.forRoot` method. you will need to pass your split configuration via the input params like so:
 
-## Further help
+```(ts)
+// Simplest Import possible.
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+import {  } from '@inghamdev/split';
+
+@NgModule({
+    imports: [
+        SplitCoreModule.forRoot({
+            core: {
+                authorizationKey: 'YOUR-KEY-HERE'
+            }
+        })
+    ]
+})
+
+```
+
+#### More to come..
